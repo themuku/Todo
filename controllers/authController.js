@@ -1,5 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import generateTokens from "../utils/generateTokens.js";
 
 export const login = async (req, res) => {
   try {
@@ -45,10 +47,41 @@ export const signup = async (req, res) => {
       password: hashedPassword,
     });
 
-    console.log(result);
+    const { accessToken, refreshToken } = generateTokens(username);
+
+    req.cookies("accessToken", accessToken, {
+      httpOnly: true,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    req.cookies("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(201).json({ success: `New User ${username} created!` });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
+};
+
+export const refresh = (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Forbidden!" });
+
+    const { accessToken } = generateTokens(user);
+
+    res.cookies("accessToken", accessToken, {
+      httpOnly: true,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    return res.json({ accessToken });
+  });
 };

@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
 import connectDb from "./config/dbConnection.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -19,8 +20,11 @@ const port = process.env.SERVER_PORT;
 // Creating app with express
 const app = express();
 
-// Body parser middleware for enabling req.body which returns an parsed json
+// Body parser middleware for enabling req.body which returns parsed json
 app.use(bodyParser.json());
+
+// Cookie parser middleware for enabling req.cookies
+app.use(cookieParser());
 
 // Routes for authorization
 app.use("/auth", authRoutes);
