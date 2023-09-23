@@ -21,7 +21,19 @@ export const login = async (req, res) => {
         message: "Invalid username or password :(",
       });
 
-    return res.status(200).json({ success: "Logged in successfuly :)" });
+    const { accessToken, refreshToken } = generateTokens(username);
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({ accessToken });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -29,7 +41,7 @@ export const login = async (req, res) => {
 
 export const signup = async (req, res) => {
   try {
-    const { username, password, imgUrl } = req.body;
+    const { username, password } = req.body;
 
     if (!username || !password)
       return res
@@ -49,39 +61,45 @@ export const signup = async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(username);
 
-    req.cookies("accessToken", accessToken, {
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
       maxAge: 15 * 60 * 1000,
     });
 
-    req.cookies("refreshToken", refreshToken, {
+    res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(201).json({ success: `New User ${username} created!` });
+    return res
+      .status(201)
+      .json({ success: `New User ${result.username} created!`, accessToken });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-export const refresh = (req, res) => {
-  const { refreshToken } = req.cookies;
+export const refresh = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
 
-  if (!refreshToken) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Forbidden!" });
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err) return res.status(403).json({ message: "Forbidden!" });
 
-    const { accessToken } = generateTokens(user);
+      const { accessToken } = generateTokens(user);
 
-    res.cookies("accessToken", accessToken, {
-      httpOnly: true,
-      maxAge: 15 * 60 * 1000,
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        maxAge: 15 * 60 * 1000,
+      });
+
+      return res.json({ accessToken });
     });
-
-    return res.json({ accessToken });
-  });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 };

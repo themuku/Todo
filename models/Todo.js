@@ -8,10 +8,7 @@ const todoSchema = new Schema({
   isActive: {
     type: Boolean,
     default: true,
-  },
-  createdAt: {
-    type: Date,
-  },
+  }
 });
 
 export default model("Todo", todoSchema);

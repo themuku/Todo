@@ -21,7 +21,7 @@ const port = process.env.SERVER_PORT;
 const app = express();
 
 // Body parser middleware for enabling req.body which returns parsed json
-app.use(bodyParser.json());
+app.use(bodyParser.json(), bodyParser.urlencoded({extended: false}));
 
 // Cookie parser middleware for enabling req.cookies
 app.use(cookieParser());
@@ -36,8 +36,8 @@ app.use("/todo", todoRoutes);
 app.use("/user", userRoutes);
 
 mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDb");
-  app.listen(port, () => {
-    console.log(`Server is running on port: ${port}`);
-  });
+    console.log("Connected to MongoDb");
+    app.listen(port, () => {
+        console.log(`Server is running on port: ${port}`);
+    });
 });
