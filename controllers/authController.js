@@ -23,13 +23,9 @@ export const login = async (req, res) => {
 
     const { accessToken, refreshToken } = generateTokens(username);
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      maxAge: 15 * 60 * 1000,
-    });
-
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -59,21 +55,9 @@ export const signup = async (req, res) => {
       password: hashedPassword,
     });
 
-    const { accessToken, refreshToken } = generateTokens(username);
-
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
     return res
       .status(201)
-      .json({ success: `New User ${result.username} created!`, accessToken });
+      .json({ success: `New User ${result.username} created!` });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -84,7 +68,7 @@ export const refresh = async (req, res) => {
     const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.sendStatus(401);
     }
 
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
@@ -92,10 +76,7 @@ export const refresh = async (req, res) => {
 
       const { accessToken } = generateTokens(user);
 
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000,
-      });
+      req.username = user.username;
 
       return res.json({ accessToken });
     });

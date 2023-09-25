@@ -1,15 +1,17 @@
-import Todo from "../models/Todo.js";
 import User from "../models/User.js";
-import refreshToken from "../utils/refreshToken.js";
 
 export const getAllTodos = async (req, res) => {
   try {
-    const todos = await Todo.find();
+    const { username } = req.body;
+    const user = await User.findOne({ username }).exec();
 
-    if (!todos) return res.status(404);
-    if (todos.length === 0) return res.status(204);
+    if (!user) return res.sendStatus(404);
 
-    return res.json({ todos });
+    if (user.todo.length === 0) return res.sendStatus(204);
+
+    const { todo } = user;
+
+    return res.json({ todo });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -17,26 +19,22 @@ export const getAllTodos = async (req, res) => {
 
 export const createTodo = async (req, res) => {
   try {
-    const { title } = req.body;
-
-    if (!title)
-      return res.status(400).json({ message: "Todo title is required!" });
-
-    if (!req.cookies.accessToken) {
-      if (!req.cookies.refreshToken) return res.status(401);
-      else res.redirect("/auth/refresh");
-    }
-
-    const accessToken = req.cookies.accessToken;
-
-    const username = JSON.parse(
-      Buffer.from(accessToken.split(".")[1], "base64").toString(),
-    ).username;
+    const { title, username } = req.body;
 
     const user = await User.findOne({ username }).exec();
 
-    if (user) return res.json({ message: "New todo is added!" });
+    if (!user) return res.sendStatus(404);
+
+    const newTodo = [...user.todo, { title, isActive: true }];
+
+    user.todo = newTodo;
+
+    user.save();
+
+    return res
+      .status(200)
+      .json({ message: `Successfully crated todo ${title}` });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };

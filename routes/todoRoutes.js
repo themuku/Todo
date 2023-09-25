@@ -4,8 +4,6 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-router.use(authMiddleware);
-
 router
   .route("/")
   .get(todoController.getAllTodos)

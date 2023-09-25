@@ -14,10 +14,15 @@ const userSchema = new Schema({
     type: String,
     default: null,
   },
-  todo: {
-    type: [Schema.Types.ObjectId],
-    default: [],
-  },
+  todo: [
+    {
+      title: String,
+      isActive: {
+        type: Boolean,
+        default: true,
+      },
+    },
+  ],
 });
 
 const userModel = mongoose.model("User", userSchema);
