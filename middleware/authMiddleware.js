@@ -16,10 +16,10 @@ const authMiddleware = async (req, res, next) => {
 
     const accessToken = token.split(" ")[1];
 
-    jwt.verify(accessToken, accessTokenSecret, (err, user) => {
+    jwt.verify(accessToken, accessTokenSecret, (err, decoded) => {
       if (err) return res.status(403).json({ message: "Forbidden!" });
 
-      req.body.username = user.username.username;
+      req.body.username = decoded.user;
 
       next();
     });

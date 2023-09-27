@@ -38,3 +38,45 @@ export const createTodo = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const updateTodo = async (req, res) => {
+  try {
+    const { username, title, isActive } = req.body;
+    const id = req.params.id;
+
+    if (!id)
+      return res.status(400).json({ message: "Id parameter is missing!" });
+
+    const user = await User.findOne({ username }).exec();
+
+    if (!user) return res.status(404).json({ message: "User not Found!" });
+
+    const todo = user.todo.find((t) => t._id.toString() === id);
+
+    if (title) todo.title = title;
+    if (isActive) todo.isActive = isActive;
+
+    user.save();
+
+    return res.json({ message: `Successfully changed todo with id: ${id}` });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteTodo = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id)
+      return res.status(400).json({ message: "Id parameter is missing!" });
+
+    const result = await User.deleteOne({ _id: id });
+
+    return res.json({
+      message: `User with id: ${id} was deleted`,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};

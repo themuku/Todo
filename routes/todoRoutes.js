@@ -7,6 +7,9 @@ const router = Router();
 router
   .route("/")
   .get(todoController.getAllTodos)
-  .post(todoController.createTodo);
+  .post(todoController.createTodo)
+  .delete(todoController.deleteTodo);
+
+router.route("/:id").patch(todoController.updateTodo);
 
 export default router;
