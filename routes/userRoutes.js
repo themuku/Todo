@@ -1,5 +1,10 @@
 import { Router } from "express";
+import * as userController from "../controllers/userController.js";
 
 const router = Router();
 
-export default router
+router.route("/").post(userController.changeUserProfile);
+
+router.delete("/", userController.deleteUser);
+
+export default router;

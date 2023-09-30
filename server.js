@@ -24,7 +24,7 @@ const port = process.env.SERVER_PORT;
 const app = express();
 
 // Cross Origin Resource Sharing - CORS Middleware
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Body parser middleware for enabling req.body which returns parsed json
 app.use(bodyParser.json(), bodyParser.urlencoded({ extended: false }));
