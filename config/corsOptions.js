@@ -1,4 +1,8 @@
-const whitelist = ["http://localhost:3000", "https://localhost:3000"];
+const whitelist = [
+  "http://localhost:3000",
+  "https://localhost:3000",
+  //   --> New Urls here <--
+];
 
 const corsOptions = {
   origin: function (origin, callback) {
